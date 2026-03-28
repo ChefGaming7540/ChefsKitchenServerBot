@@ -16,26 +16,50 @@ function getOrCreateState(username) {
     return playerState[username];
 }
 
-async function askLLM(prompt, unhinged, username, context) {
+async function askLLM(prompt, unhinged, username, context, retries = 1) {
     const moodInstruction = unhinged
         ? `UNHINGED MODE. Player "${username}" has triggered you. Context: ${context}. Snap at them.`
         : `NORMAL MODE. Respond to ${username}".`;
 
-    const response = await fetch('http://localhost:11434/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            model: 'phi3:mini',
-            messages: [
-                { role: 'system', content: SYSTEM_PROMPT },
-                { role: 'user', content: `${moodInstruction}\n\nPlayer message: ${prompt}` }
-            ],
-            stream: false
-        })
+    const url = 'http://127.0.0.1:11434/api/chat';
+    const body = JSON.stringify({
+        model: 'phi3:mini',
+        messages: [
+            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'user', content: `${moodInstruction}\n\nPlayer message: ${prompt}` }
+        ],
+        stream: false
     });
 
-    const data = await response.json();
-    return data.message.content;
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Connection': 'close'
+            },
+            body
+        });
+
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(`LLM request failed ${response.status} ${response.statusText}: ${text}`);
+        }
+
+        const data = await response.json();
+        return data?.message?.content || data?.choices?.[0]?.message?.content || data?.output_text || '';
+    } catch (err) {
+        console.error('LLM fetch error', err.code || err.name, err.message);
+
+        if (err.code === 'ECONNRESET' && retries > 0) {
+            console.warn('Retrying LLM request after ECONNRESET...');
+            await new Promise(resolve => setTimeout(resolve, 200));
+            return askLLM(prompt, unhinged, username, context, retries - 1);
+        }
+
+        throw err;
+    }
 }
 
 module.exports = function registerAIChat(bot) {
