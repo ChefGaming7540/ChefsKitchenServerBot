@@ -21,7 +21,7 @@ async function askLLM(prompt, unhinged, username, context) {
         ? `UNHINGED MODE. Player "${username}" has triggered you. Context: ${context}. Snap at them.`
         : `NORMAL MODE. Respond to ${username}".`;
 
-    const response = await fetch('http://localhost:11434/api/chat', {
+    const response = fetch('http://localhost:11434/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
