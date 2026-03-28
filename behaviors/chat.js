@@ -1,4 +1,3 @@
-let fetchFn;
 const { attackChef } = require('./attack');
 const { username } = require('../config');
 
@@ -17,20 +16,11 @@ function getOrCreateState(username) {
     return playerState[username];
 }
 
-async function getFetch() {
-    if (!fetchFn) {
-        const mod = await import('node-fetch');
-        fetchFn = mod.default || mod;
-    }
-    return fetchFn;
-}
-
 async function askLLM(prompt, unhinged, username, context) {
     const moodInstruction = unhinged
         ? `UNHINGED MODE. Player "${username}" has triggered you. Context: ${context}. Snap at them.`
         : `NORMAL MODE. Respond to ${username}".`;
 
-    const fetch = await getFetch();
     const response = await fetch('http://localhost:11434/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

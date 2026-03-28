@@ -4,7 +4,6 @@
     "main": "index.js",
     "dependencies": {
         "mineflayer": "^4.23.0",
-        "mineflayer-pathfinder": "^2.4.5",
-        "node-fetch": "^3.3.2"
+        "mineflayer-pathfinder": "^2.4.5"
     }
 }
