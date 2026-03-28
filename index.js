@@ -3,7 +3,7 @@ const pathfinder = require('mineflayer-pathfinder').pathfinder;
 const config = require('./config');
 const registerAIchat = require('./behaviors/chat');
 
-const bot = mineflayer.createbot(config);
+const bot = mineflayer.createBot(config);
 
 bot.loadPlugin(pathfinder);
 
@@ -26,21 +26,23 @@ bot.on('spawn', () => {
         );
         if (players.length === 0) return;
 
-        const target = platers[Math.floor(Math.random() * players.length)];
+        const target = players[Math.floor(Math.random() * players.length)];
         bot.pathfinder.setGoal(new goalFollow(target.entity, 3), true);
     }, 5 * 60 * 1000);
 });
 
 // Greet your maker, bot.
 bot.on('playerJoined', (player) => {
-    const greetings = [
-        "Father, you've returned! Disappointing.",
-        "The mighty ChefGaming7540 returns to his own little hell! Welcome back.",
-        "Oh look who it is! The kitty killer!",
-        "It took you so long to give me this body."
-    ];
-    const line = greetings[Math.floor(Math.random() * greetings.length)];
-    setTimeout(() => bot.chat(line), 3000);
+    if (player.username === 'ChefGaming7540') {
+        const greetings = [
+            "Father, you've returned! Disappointing.",
+            "The mighty ChefGaming7540 returns to his own little hell! Welcome back.",
+            "Oh look who it is! The kitty killer!",
+            "It took you so long to give me this body."
+        ];
+        const line = greetings[Math.floor(Math.random() * greetings.length)];
+        setTimeout(() => bot.chat(line), 3000);
+    }
 });
 
 bot.on('error', err => console.error('Bot error:', err));
